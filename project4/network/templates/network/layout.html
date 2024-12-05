@@ -1,0 +1,157 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{% block title %}Social Network{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+    <nav class="flex justify-between items-center py-[5px] bg-white border-b border-gray-300">
+        {% if user.is_authenticated %}
+        <div class="ml-60 px-4 text-sm text-gray-500">
+            <a class="inline px-3 text-sm hover:text-cyan-500 hover:no-underline duration-150"
+                href="{% url 'index' %}"><i class="bi bi-house-fill text-lg"></i> Home</a>
+            <a class="inline px-3 text-sm hover:text-cyan-500 hover:no-underline duration-150"
+                href="{% url 'following' %}"><i class="bi bi-people-fill text-lg"></i>
+                Following</a>
+            <a class="inline px-3 text-sm hover:text-cyan-500 hover:no-underline duration-150" href="#"><i
+                    class="bi bi-envelope-fill text-lg"></i>
+                Messages</a>
+        </div>
+        <i class="bi bi-twitter text-cyan-500 text-3xl"></i>
+
+        <div class="mr-52 px-5">
+            <input type="text" placeholder="Search"
+                class="border-[1px] border-gray-300 bg-gray-100 text-sm py-[5px] px-2 rounded-3xl outline-none">
+            <div class="relative inline-block text-left">
+                <!--dropdown trigger-->
+                <a class="px-2 inline hover:no-underline" href="{% url 'profile' user.username %}">
+                    <img src="{{ user.avatar.url }}" class="inline rounded-sm w-8 cursor-pointer" id="dropdownTrigger">
+                </a>
+
+                <!--dropdown menu-->
+                <div id="dropdownMenu"
+                    class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                    <a href="{% url 'profile' user.username %}"
+                        class="block px-4 py-[2px] text-gray-500 text-sm hover:bg-gray-200 hover:text-cyan-500 hover:no-underline">
+                        Profile
+                    </a>
+                    <a href="{% url 'login' %}"
+                        class="block px-4 py-[2px] text-sm text-gray-500 hover:bg-gray-200 hover:text-cyan-500 hover:no-underline">
+                        Logout
+                    </a>
+                </div>
+            </div>
+            <button id="myBtn"
+                class="bg-cyan-500 text-white border-[1px] border-gray-400 py-[4px] px-3 rounded-lg focus:outline-none focus:ring-[1px] focus:ring-cyan-600">
+                <i class="bi bi-pencil-square"></i>
+                Tweet
+            </button>
+
+        </div>
+        {% else %}
+        <div>
+            <a class="hover:no-underline" href="{% url 'login' %}">Log In</a>
+        </div>
+        <div>
+            <a class="hover:no-underline" href="{% url 'register' %}">Register</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <div>
+        {% block body %}
+        {% endblock %}
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="fixed inset-0 hidden bg-black bg-opacity-40 z-50 overflow-auto" aria-hidden="true">
+        <!-- Modal Content -->
+        <div class="bg-gray-100 rounded-lg shadow-lg mx-auto mt-24 p-4 w-[400px]">
+            <!-- Close Button -->
+            <span class="close text-gray-500 text-xl ml-2 font-bold float-right cursor-pointer hover:text-black"
+                role="button" aria-label="Close Modal">&times;</span>
+            <!-- Form -->
+            <form action="{% url 'create-post' %}" method="post" class="space-y-3">
+                {% csrf_token %}
+                <div class="flex items-start space-x-3">
+                    <!-- Profile Avatar -->
+                    <img src="{{ user.avatar.url }}" class="rounded-full w-10 h-10" alt="User Avatar">
+                    <!-- Text Area -->
+                    <div class="flex-grow">
+                        <label for="create-post" class="sr-only">Create Post</label>
+                        <textarea name="create-post" id="create-post"
+                            class="w-full h-20 resize-none border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            placeholder="What's happening?" size="280" required></textarea>
+                    </div>
+                </div>
+                <!-- Post Actions -->
+                <div class="flex justify-between items-center">
+                    <div class="flex space-x-4 text-sky-500">
+                        <i class="bi bi-camera" aria-hidden="true"></i>
+                        <i class="bi bi-emoji-smile" aria-hidden="true"></i>
+                    </div>
+                    <input type="submit" value="Tweet"
+                        class="bg-cyan-500 px-4 py-[5px] rounded-lg text-md font-bold text-white focus:none">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    </div>
+
+
+    <script>
+        // Toggle dropdown visibility
+        document.getElementById("dropdownTrigger").addEventListener("click", function (event) {
+            event.preventDefault();
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            dropdownMenu.classList.toggle("hidden");
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener("click", function (event) {
+            const dropdownMenu = document.getElementById("dropdownMenu");
+            if (!event.target.closest("#dropdownTrigger") && !event.target.closest("#dropdownMenu")) {
+                dropdownMenu.classList.add("hidden");
+            }
+        });
+
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal 
+        btn.onclick = function () {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,155 @@
+{% extends "network/layout.html" %}
+{% load custom_filters %}
+{% block body%}
+{% if user.is_authenticated %}
+<div>
+    <div class="relative">
+        <!-- cover -->
+        <img src="{{ profile_user.cover.url }}" alt="Cover Image" class="w-full h-96 object-cover">
+        <!-- avatar -->
+        <div class="absolute top-72 left-64 border-4 border-white rounded-lg shadow-md">
+            <img src="{{ profile_user.avatar.url }}" alt="Avatar" class="w-52 border-4 rounded-lg ">
+        </div>
+    </div>
+    <div id="sticky-header"
+        class="flex justify-between items-center w-full bg-white text-md text-gray-600 font-bold py-2 border-[1px] border-gray-300">
+        <div class="flex justify-center ml-[700px]">
+            <div class="inline-block">
+                <p class="px-4">Tweets</p>
+                <p class="text-center text-sky-500 text-sm font-normal">{{ post_count }}</p>
+            </div>
+            <div class="inline-block">
+                <p class="px-4">Following</p>
+                <p class="text-center text-sky-500 text-sm font-normal">{{ following_count }}</p>
+            </div>
+            <div class="inline-block">
+                <p class="px-4">Followers</p>
+                <p class="text-center text-sky-500 text-sm font-normal">{{ followers_count }}</p>
+            </div>
+        </div>
+        {% if is_own_profile %}
+        <div class="mr-96">
+            <button class="bg-cyan-500 py-2 px-4 text-white font-bold rounded-md">Edit Profile</button>
+        </div>
+        {% else %}
+        <div class="mr-96">
+            <form action="{% url 'follow_user' profile_user.id %}" method="post">
+                {% csrf_token %}
+                <button
+                    class="{% if is_following %}bg-red-500{% else %}bg-cyan-500{% endif %} py-2 px-4 text-white font-bold rounded-md ring:no-underline">
+                    {% if is_following %}Unfollow{% else %}Unfollow{% endif %}
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex justify-between mx-2">
+    <div class="ml-64">
+        <div class="mt-20">
+            <div>
+                <p class="text-2xl font-bold">{{ profile_user.name }}</p>
+                <p class="text-xl text-gray-500"> @{{ profile_user.username }}</p>
+            </div>
+            <div class="w-10">
+                <p>{{ profile_user.bio }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="flex justify-center mr-16">
+        <div class="bg-white m-2 border-[1px] border-gray-300 w-[600px]">
+            <div class="p-2">
+                <p class="text-lg font-bold">Tweets</p>
+            </div>
+            {% for post in posts %}
+            <div class="flex items-start space-x-2 border border-black p-2">
+                <div class="my-[3px]">
+                    <img src="{{ post.user.avatar.url }}" class="rounded-lg w-12 h-12">
+                </div>
+                <div class="my-[3px]">
+                    <div class="flex justify-start items-center">
+                        <div class="font-bold"> {{ post.user.name }} </div>
+                        <div class="text-gray-500 mx-[5px] tracking-tighter">@{{ post.user.username }}</div><span
+                            class="mx-[5px] text-gray-500">&#8226</span>
+                        <div class="text-sm text-gray-500">{{ post.created_at|time_ago_in_units }}</div>
+
+
+                    </div>
+                    <div class="py-[1px] text-lg w-[500px]">
+                        <ul>
+                            <li class="">{{ post.post }}</li>
+                        </ul>
+                    </div>
+                    <div class="flex justify-around py-2 space-x-5">
+                        <div class="px-2"><i class="bi bi-chat"></i></div>
+                        <div class="px-2"><i class="bi bi-repeat"></i></div>
+                        <div class="px-2"><i class="bi bi-heart"></i></div>
+                        <div class="relative">
+                            <!-- Trigger Icon -->
+                            <button id="dToggle" class="focus:outline-none">
+                                <i class="bi bi-three-dots-vertical text-gray-600"></i>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="dMenu"
+                                class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
+                                <ul class="text-sm text-gray-700">
+                                    <li>
+                                        <a href="#"
+                                            class="block px-4 py-[2px] text-gray-500 text-sm hover:bg-gray-200 hover:text-cyan-500 hover:no-underline">Edit</a>
+                                    </li>
+                                    <li>
+                                        <a href="#"
+                                            class="block px-4 py-[2px] text-gray-500 text-sm hover:bg-gray-200 hover:text-cyan-500 hover:no-underline">Delete</a>
+                                    </li>
+                                    <li>
+                                        <a href="#"
+                                            class="block px-4 py-[2px] text-gray-500 text-sm hover:bg-gray-200 hover:text-cyan-500 hover:no-underline">Report</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div>
+        <div class="mr-48">
+            hi
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    const dropdownToggle = document.getElementById("dToggle");
+    const dropdownMenu = document.getElementById("dMenu");
+
+    dropdownToggle.addEventListener("click", () => {
+        dropdownMenu.classList.toggle("hidden");
+    });
+
+    // Close the dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+        if (!dropdownMenu.contains(e.target) && !dropdownToggle.contains(e.target)) {
+            dropdownMenu.classList.add("hidden");
+        }
+    });
+
+    const header = document.getElementById("sticky-header");
+    const originalOffset = header.offsetTop;
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > originalOffset) {
+            header.classList.add("fixed", "top-0", "z-50", "shadow-md"); // Add fixed behavior
+        } else {
+            header.classList.remove("fixed", "top-0", "z-50", "shadow-md"); // Restore to original position
+        }
+    });
+
+</script>
+{% endif %}
+{% endblock %}
